@@ -1,0 +1,210 @@
+package de.htw.su.liskov;
+
+import java.io.IOException;
+
+public class Customer {
+	private String name;
+
+	
+	public Customer () {
+		this.setName(name);
+	}	
+	
+	/*
+	 * There is no dependence from the implementation of 'Storage'.  
+	 */
+
+	public String save(String s) throws IOException  
+    {  
+ 
+        return storage.save(s);
+    }	
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+
+}
+
+
+package de.htw.su.liskov;
+
+import java.io.IOException;
+
+public interface IStorage {
+	
+	public String save(String s) throws IOException;
+
+}
+
+
+package de.htw.su.liskov;
+
+import java.io.IOException;
+
+public class Storage  {
+	
+	public Storage (String s) {}
+	
+	public Storage() {}
+
+	public String save(String s) throws IOException	
+    {
+		s = s + " saved in a file.";
+		return s;
+    }
+}
+
+package de.htw.su.liskov;
+
+public class StorageDatabase {	
+		
+	public StorageDatabase() {}
+
+	@Override
+	public String save(String s)  
+    {
+		if (connection (s) == true) {
+			
+			return s + " saved in a database.";
+		}
+		else {
+			return "DB connection failed.";
+		}
+    }
+	
+	/*A dummy connection check - database connection is not the topic!
+	 * The topic is the restriction of the overwritten save method by the 
+	 * distinction of cases. This distinction of cases is in the current 
+	 * example a violation of the Liskov's Substitution Principle.
+	*/ 
+	private boolean connection (String s) {
+		
+		String v = "DB connection failed.";
+		if (!s.equals(v)) {
+			return true;
+		}
+		else {		
+			return false;
+		}		
+	}
+}
+
+
+package de.htw.su.liskov;
+
+public class StorageXML {	
+	
+	public StorageXML() {}
+
+	
+	public String save(String s)  
+    {
+		if (validation (s) == true) {
+			
+			return s + " saved in a XML file.";
+		}
+		else {
+			return "Validation failed.";
+		}
+    }
+	
+	/*A dummy validation - XML validation is not the topic!
+	 * The topic is the restriction of the overwritten save method by the 
+	 * distinction of cases. This distinction of cases is in the current 
+	 * example a violation of the Liskov's Substitution Principle.
+	*/	
+	private boolean validation (String s) {
+		
+		String v1 = "<lastname>";
+		String v2 = "</lastname>";
+		// A dummy validation:
+		if (s.contains(v1) && s.contains(v2)) {
+			return true;
+		}
+		else {		
+			return false;
+		}		
+	}
+}
+
+
+package de.htw.su.liskov.test;
+
+import static org.junit.Assert.assertEquals;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import de.htw.su.liskov.Customer;
+import de.htw.su.liskov.Storage;
+import de.htw.su.liskov.StorageXML;
+import de.htw.su.util.LogUtils;
+import de.htw.su.util.MiscUtils;
+
+/**
+ * Demonstration test - demonstrates Liskov's Substitution Principle
+ * @author <a href="mailto:Dierk.Langbein(a/t)htw-berlin.de">Dierk Langbein</a>
+ */
+public class StorageTest {
+
+    /**
+     * logger
+     */
+    private static final Logger LOGGER = Logger.getLogger(StorageTest.class.getName());
+
+    /**
+     * Log-level for this test
+     */
+    private static final Level LOG_LEVEL = Level.FINE;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        LogUtils.setConsoleHandlerLogLevel(LOG_LEVEL);
+        LogUtils.setLogLevel(LOG_LEVEL, StorageTest.class, Customer.class,
+                Storage.class, StorageXML.class);
+    }
+    
+    @Test
+    public void testSave() throws Exception {
+
+        LOGGER.info("Test the save function ...");
+        long startTimeNanos = System.nanoTime();
+        Customer customer = new Customer();        
+        customer.setName("<lastname>Urbino<lastname>");
+        Storage storage = new Storage();        
+        customer.setStorage(storage);
+        String receivedResult = customer.save(customer.getName());     
+        
+        String expectedResult = "<lastname>Urbino<lastname> saved in a file.";                
+
+        assertEquals(expectedResult, receivedResult);
+
+        LOGGER.info("Test save successful! Elapsed time: "
+                + MiscUtils.formatNanosAsSeconds(System.nanoTime() - startTimeNanos) + " s");
+    }
+    
+   
+    @Test  
+    public void testSaveXML() throws Exception {
+
+    	LOGGER.info("Test the save XML function ...");
+        long startTimeNanos = System.nanoTime();
+        Customer customer = new Customer();        
+        customer.setName("<lastname>Urbino</lastname>");        
+        Storage storage = new StorageXML();
+        customer.setStorage(storage);
+        String receivedResult = customer.save(customer.getName());      
+        String expectedResult = "<lastname>Urbino</lastname> saved in a XML file.";             
+
+        assertEquals(expectedResult, receivedResult);
+
+        LOGGER.info("Test save XML successful! Elapsed time: "
+                + MiscUtils.formatNanosAsSeconds(System.nanoTime() - startTimeNanos) + " s");
+    }   
+}

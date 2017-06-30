@@ -1,0 +1,141 @@
+public class Customer {
+	private String name;
+	
+	public Customer () {
+		this.setName(name);
+	}
+	
+	public String saveIndependent(StorageService storageService, String s){
+		return storageService.createStorage(storageType).save(s);
+	}
+    public String print(String s)  
+    {  
+        Print print = new Print(s);  
+        return print.print(s);
+    } 
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+public interface IStorageService {
+			
+	public AStorage createStorage(StorageType storageType);
+
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+public class StorageService implements IStorageService {
+	
+	
+	public StorageService() {};
+	@Override
+	public Storage createStorage(StorageType storageType) {
+		
+		switch (storageType) {
+			case XML:
+				return new XmlStorage();
+			case DB:
+				return new DatabaseStorage();			
+			
+		}		
+	}
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+public abstract class AStorage {
+ 
+	public String save(String s) {
+		// Only a dummy return. Not important for our context.
+		return s;
+	}
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+public class XmlStorage  {	
+	
+	
+	public String save(String s)  
+    {		
+		return s + " saved in a XML file.";  
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+public class DatabaseStorage extends AStorage {
+	
+		
+	@Override
+	public String save(String s) { 
+		
+		return s + " saved in a data base."; 
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+++++++++ Helper class in our current context +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public enum StorageType {	
+	XML,
+	DB;
+}
+
+####################### Test ######################################################################################
+
+/*
+ * Dependency injection test - demonstrates DEPENDENCY INVERSION
+ */
+package de.htw.su.dependencyinversionIOC.test;
+
+import static org.junit.Assert.assertEquals;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import de.htw.su.dependencyinversionIOC.StorageService;
+import de.htw.su.dependencyinversionIOC.StorageType;
+import de.htw.su.util.LogUtils;
+import de.htw.su.util.MiscUtils;
+
+/**
+ * Dependency inversion test - demonstrates DEPENDENCY INVERSION
+ * @author <a href="mailto:Dierk.Langbein(a/t)htw-berlin.de">Dierk Langbein</a> by using sources of Karl Eilebrecht
+ */
+public class DependencyInversionIOCTest {
+
+    /**
+     * logger
+     */
+    private static final Logger LOGGER = Logger.getLogger(DependencyInversionIOCTest.class.getName());
+
+    /**
+     * Log-level for this test
+     */
+    private static final Level LOG_LEVEL = Level.FINE;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        LogUtils.setConsoleHandlerLogLevel(LOG_LEVEL);
+        LogUtils.setLogLevel(LOG_LEVEL, );
+    }  
+   
+    @Test  
+    public void testSaveIndependent() throws Exception {
+
+        
+        LOGGER.info("Test of the independent save function in 'Customer' successful! Elapsed time: "
+                + MiscUtils.formatNanosAsSeconds(System.nanoTime() - startTimeNanos) + " s");
+    }
+}
